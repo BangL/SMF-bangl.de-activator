@@ -259,6 +259,7 @@ public class DatabaseConnector {
 
     public boolean isValidated(final Player player, final Config config) throws Exception
     {
+        Boolean valid = null;
         final int memberId = this.getMemberId(player, config);
         final ResultSet result = this.executeQuery("SELECT"
                 + " value"
@@ -270,18 +271,20 @@ public class DatabaseConnector {
         try
         {
             result.next();
-            return result.getBoolean("value");
+            valid = result.getBoolean("value");
+            result.close();
         }
         catch (SQLException ex) 
         {
             plugin.getLogger().log(Level.SEVERE,
                     "Error checking validation of player \"" + player.getName() + "\": ", ex);
         }
-        return false;
+        return valid;
     }
 
     public boolean isValidCode(final Player player, final String code, final Config config) throws Exception
     {
+        Boolean valid = null;
         final int memberId = this.getMemberId(player, config);
         final ResultSet result = this.executeQuery("SELECT"
                 + " value"
@@ -293,25 +296,37 @@ public class DatabaseConnector {
         try
         {
             result.next();
-            return result.getString("value").equalsIgnoreCase(code);
+            valid = result.getString("value").equalsIgnoreCase(code);
+            result.close();
         }
         catch (SQLException ex)
         {
             plugin.getLogger().log(Level.SEVERE,
                     "Error checking validate code of player \"" + player.getName() + "\": ", ex);
         }
-        return false;
+        return valid;
     }
 
     public boolean setValidated(final Player player, final Config config) throws Exception
     {
         final int memberId = this.getMemberId(player, config);
-        return this.execute("UPDATE {PREFIX}themes SET"
-                + " value = 1"
-                + " "
-                + " WHERE id_themes = 1"
-                + " AND id_member = {0}"
-                + " AND variable = 'cust_valida'"
-                , memberId);
+        
+        return (// Set validated to true
+                this.execute(
+                        "UPDATE {PREFIX}themes SET " +
+                        "value = 1 " +
+                        "WHERE id_themes = 1 " +
+                        "AND id_member = {0} " +
+                        "AND variable = 'cust_valida'",
+                        memberId)
+                &&
+                // Delete validation code
+                this.execute(
+                        "DELETE FROM {PREFIX}themes " +
+                        "WHERE id_themes = 1 " +
+                        "AND id_member = {0} " +
+                        "AND variable = 'cust_valida0'",
+                        memberId)
+                );
     }
 }
