@@ -71,24 +71,20 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 final Player player = (Player)sender;
                 if (!(sender instanceof Player))
                 {
-                    sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
-                            + "This command can only be run by a player.");
+                    sender.sendMessage(ChatColor.RED + "This command can only be run by a player.");
                 }
                 else if (args.length != 1)
                 {
-                    sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
-                            + "Invalid argument count.");
+                    sender.sendMessage(ChatColor.RED + "Invalid argument count.");
                 }
                 else if (dbc.isValidated(player, config))
                 {
-                    sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
-                            + "This minecraft name is already validated.");
+                    sender.sendMessage(ChatColor.RED + "This minecraft name is already validated.");
                 }
                 else if (args[0].trim().isEmpty()
                         || !dbc.isValidCode(player, args[0].trim(), config))
                 {
-                    sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
-                            + "Invalid code.");
+                    sender.sendMessage(ChatColor.RED + "Invalid code.");
                 }
                 else
                 {
@@ -102,13 +98,12 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                     }
                     else
                     {
-                        sender.sendMessage(ChatColor.DARK_GREEN + "[" + this.getDescription().getName() + "] "
-                                + "This minecraft name is now validated!");
+                        sender.sendMessage(ChatColor.GREEN + "This minecraft name is now validated!");
                     }
                 }
                 handled = true;
             } catch (Exception ex) {
-                sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
+                sender.sendMessage(ChatColor.RED
                         + "There was an error while validating your minecraft name. Please contact one of our admins.");
                 Logger.getLogger(SMFAccountValidatorPlugin.class.getName()).log(Level.SEVERE, null, ex);
             }
