@@ -1,0 +1,15 @@
+### Default config for SMFAccountValidator
+### Use a YAML parser to check your syntax (http://instantyaml.appspot.com/)
+### If you have any questions pm me on dev.bukkit.org or send me a mail to henno.rickowski@gmail.com
+################################################################################################
+
+# database login data
+sql:
+  # database to connect to
+  dns: jdbc:mysql://localhost/smf
+  # username to login on database
+  username: smf
+  # password to login
+  password: password
+  # prefix for smf tables
+  prefix: smf_

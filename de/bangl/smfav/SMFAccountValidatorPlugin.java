@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2012 BangL <henno.rickowski@googlemail.com>
+ *                    mewin <mewin001@hotmail.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +17,8 @@
  */
 package de.bangl.smfav;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -25,19 +28,34 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  *
  * @author BangL <henno.rickowski@googlemail.com>
+ * @author mewin<mewin001@hotmail.de>
  */
-public class SMFAccountValidatorPlugin extends JavaPlugin {
+public class SMFAccountValidatorPlugin extends JavaPlugin
+{
+    private Config config;
+    private DatabaseConnector dbc;
 
     @Override
     public void onEnable()
     {
-        
+        config = new Config(this);
+        dbc = new DatabaseConnector();
+        dbc.init(config.getString("sql.dns", ""),
+                config.getString("sql.username", ""),
+                config.getString("sql.password", ""),
+                config.getString("sql.prefix", ""),
+                this);
+        dbc.connect();
     }
 
     @Override
     public void onDisable()
     {
-        
+        //dbc.save();
+        dbc.destroy();
+        dbc = null;
+        //config.save();
+        config = null;
     }
 
     @Override
@@ -45,22 +63,42 @@ public class SMFAccountValidatorPlugin extends JavaPlugin {
     {
         if (cmd.getName().equalsIgnoreCase("va"))
         {
-            if (!(sender instanceof Player))
-            {
+            try {
+                final Player player = (Player)sender;
+                if (!(sender instanceof Player))
+                {
+                    sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
+                            + "This command can only be run by a player.");
+                }
+                else if (args.length != 1)
+                {
+                    sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
+                            + "Invalid argument count.");
+                }
+                else if (dbc.isValidated(player, config))
+                {
+                    sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
+                            + "This minecraft name is already validated.");
+                }
+                else if (args[0].trim().isEmpty()
+                        || !dbc.isValidCode(player, args[0].trim(), config))
+                {
+                    sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
+                            + "Invalid code.");
+                }
+                else
+                {
+                    dbc.setValidated(player, config);
+                    // TODO: send signal to CommunityBridge to change group of player in forums and pex
+                    sender.sendMessage(ChatColor.DARK_GREEN + "[" + this.getDescription().getName() + "] "
+                            + "This minecraft name is now validated!");
+                }
+                return true;
+            } catch (Exception ex) {
                 sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
-                        + "This command can only be run by a player");
-                return false;
+                        + "There was an error while validating your minecraft name. Please contact one of our admins.");
+                Logger.getLogger(SMFAccountValidatorPlugin.class.getName()).log(Level.SEVERE, null, ex);
             }
-
-            if (args.length != 1)
-            {
-                sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
-                        + "Invalid argument count.");
-                return false;
-            }
-
-            final Player player = (Player)sender;
-            return Utils.Validate(player, args[0]);
         }
         return false;
     }
