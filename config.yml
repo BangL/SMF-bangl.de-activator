@@ -13,3 +13,10 @@ sql:
   password: password
   # prefix for smf tables
   prefix: smf_
+  
+# Optinal Values, only used when "CommunityBridge" is installed
+cb:
+  # Set a new rank for validated members?
+  set: true
+  # The cb rank to set
+  rank: Validated

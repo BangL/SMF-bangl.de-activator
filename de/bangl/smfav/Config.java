@@ -151,4 +151,8 @@ public class Config {
     {
         return (double) this.getObject(name, (Object) def);
     }
+
+    public boolean getBoolean(final String name, final boolean def) {
+        return (boolean) this.getObject(name, (Object) def);
+    }
 }

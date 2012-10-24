@@ -19,6 +19,7 @@ package de.bangl.smfav;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -61,6 +62,7 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
+        Boolean handled = false;
         if (cmd.getName().equalsIgnoreCase("va"))
         {
             try {
@@ -89,17 +91,23 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 else
                 {
                     dbc.setValidated(player, config);
-                    // TODO: send signal to CommunityBridge to change group of player in forums and pex
                     sender.sendMessage(ChatColor.DARK_GREEN + "[" + this.getDescription().getName() + "] "
                             + "This minecraft name is now validated!");
+
+                    // optional CommunityBridge support
+                    if (this.getServer().getPluginManager().getPlugin("CommunityBridge") != null
+                            && config.getBoolean("cb.set", true))
+                    {
+                        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "/cbrank " + player.getName() + " " + config.getString("cb.rank", "Validated"));
+                    }
                 }
-                return true;
+                handled = true;
             } catch (Exception ex) {
                 sender.sendMessage(ChatColor.RED + "[" + this.getDescription().getName() + "] "
                         + "There was an error while validating your minecraft name. Please contact one of our admins.");
                 Logger.getLogger(SMFAccountValidatorPlugin.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return false;
+        return handled;
     }
 }
