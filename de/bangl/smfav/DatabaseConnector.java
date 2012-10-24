@@ -315,7 +315,7 @@ public class DatabaseConnector {
                 this.execute(
                         "UPDATE {PREFIX}themes SET " +
                         "value = 1 " +
-                        "WHERE id_themes = 1 " +
+                        "WHERE id_theme = 1 " +
                         "AND id_member = {0} " +
                         "AND variable = 'cust_valida'",
                         memberId)
@@ -323,7 +323,7 @@ public class DatabaseConnector {
                 // Delete validation code
                 this.execute(
                         "DELETE FROM {PREFIX}themes " +
-                        "WHERE id_themes = 1 " +
+                        "WHERE id_theme = 1 " +
                         "AND id_member = {0} " +
                         "AND variable = 'cust_valida0'",
                         memberId)

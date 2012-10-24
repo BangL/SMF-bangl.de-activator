@@ -63,7 +63,9 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
     {
         Boolean handled = false;
-        if (cmd.getName().equalsIgnoreCase("va"))
+        if (cmd.getName().equalsIgnoreCase("va")
+                || cmd.getName().equalsIgnoreCase("av")
+                || cmd.getName().equalsIgnoreCase("validate"))
         {
             try {
                 final Player player = (Player)sender;
@@ -98,7 +100,7 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                     if (this.getServer().getPluginManager().getPlugin("CommunityBridge") != null
                             && config.getBoolean("cb.set", true))
                     {
-                        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "/cbrank " + player.getName() + " " + config.getString("cb.rank", "Validated"));
+                        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + config.getString("cb.rank", "Validated"));
                     }
                 }
                 handled = true;

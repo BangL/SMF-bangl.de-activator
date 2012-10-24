@@ -9,6 +9,7 @@ commands:
   va:
     permission: account.validate
     usage: /va [code]
+    aliases: [ av, validate ]
 
 permissions:
   account.validate:
