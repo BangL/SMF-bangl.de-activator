@@ -36,7 +36,7 @@ import org.yaml.snakeyaml.Yaml;
 public class Config {
     private Map<String, Object> values;
 
-    public Config(final Plugin plugin)
+    public Config(final Plugin plugin) 
     {
         final Yaml yaml = new Yaml();
         final File configFile = new File(plugin.getDataFolder(), "config.yml");
@@ -45,11 +45,12 @@ public class Config {
         {
             createDefaultConfig(plugin);
         }
-        try {
-            final FileReader reader = new FileReader(configFile);
-
-            values = (Map) yaml.load(reader);
+        try (FileReader reader = new FileReader(configFile)) {
+                values = (Map) yaml.load(reader);
         } catch (FileNotFoundException ex) {
+            plugin.getLogger().log(Level.SEVERE, "Could not load plugin config file: ", ex);
+            values = (Map) yaml.load(plugin.getResource("/config.yml"));
+        } catch (IOException ex) {
             plugin.getLogger().log(Level.SEVERE, "Could not load plugin config file: ", ex);
             values = (Map) yaml.load(plugin.getResource("/config.yml"));
         }
@@ -59,49 +60,55 @@ public class Config {
     {
         FileOutputStream out = null;
         InputStream input = null;
-        try
-        {
-            final File configFile = new File(plugin.getDataFolder(), "/config.yml");
+        final File configFile = new File(plugin.getDataFolder(), "/config.yml");
 
-            if (!plugin.getDataFolder().exists())
-            {
-                plugin.getDataFolder().mkdirs();
-            }
-
-            if (!configFile.exists())
-            {
-                configFile.createNewFile();
-            }
-
-            out = new FileOutputStream(configFile);
-            input = plugin.getResource("config.yml");
-
-            int next;
-            while((next = input.read()) >= 0)
-            {
-                out.write(next);
-            }
-        }
-        catch (IOException ex)
-        {
-            plugin.getLogger().log(Level.SEVERE, "Could not create default configuration file: ", ex);
-        }
-        finally
+        if (plugin.getDataFolder().exists()
+                || plugin.getDataFolder().mkdirs())
         {
             try
             {
-                if (input != null)
+                if (configFile.exists()
+                        || configFile.createNewFile())
                 {
-                    input.close();
-                }
+                    out = new FileOutputStream(configFile);
+                    input = plugin.getResource("config.yml");
 
-                if (out != null)
+                    int next;
+                    while((next = input.read()) >= 0)
+                    {
+                        out.write(next);
+                    }
+                }
+                else
                 {
-                    out.close();
+                    plugin.getLogger().log(Level.SEVERE, "Could not create default configuration file.");
                 }
             }
             catch (IOException ex)
-            {}
+            {
+                plugin.getLogger().log(Level.SEVERE, "Could not create default configuration file: ", ex);
+            }
+            finally
+            {
+                try
+                {
+                    if (input != null)
+                    {
+                        input.close();
+                    }
+
+                    if (out != null)
+                    {
+                        out.close();
+                    }
+                }
+                catch (IOException ex)
+                {}
+            }
+        }
+        else
+        {
+            plugin.getLogger().log(Level.SEVERE, "Could not create config folder.");
         }
     }
 
@@ -144,5 +151,4 @@ public class Config {
     {
         return (double) this.getObject(name, (Object) def);
     }
-
 }
