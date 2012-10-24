@@ -93,14 +93,17 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 else
                 {
                     dbc.setValidated(player, config);
-                    sender.sendMessage(ChatColor.DARK_GREEN + "[" + this.getDescription().getName() + "] "
-                            + "This minecraft name is now validated!");
 
                     // optional CommunityBridge support
                     if (this.getServer().getPluginManager().getPlugin("CommunityBridge") != null
                             && config.getBoolean("cb.set", true))
                     {
                         Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + config.getString("cb.rank", "Validated"));
+                    }
+                    else
+                    {
+                        sender.sendMessage(ChatColor.DARK_GREEN + "[" + this.getDescription().getName() + "] "
+                                + "This minecraft name is now validated!");
                     }
                 }
                 handled = true;
