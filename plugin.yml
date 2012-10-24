@@ -1,0 +1,15 @@
+name: SMFAccountValidator
+main: de.bangl.smfav.SMFAccountValidatorPlugin
+version: 0.1
+
+authors: [ BangL ]
+depend: [ CommunityBridge ]
+
+commands:
+  va:
+    permission: account.validate
+    usage: /va [code]
+
+permissions:
+  account.validate:
+    default: true

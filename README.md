@@ -1,2 +1,2 @@
-SMF-bangl.de-activator
+SMFAccountValidator
 ======================
