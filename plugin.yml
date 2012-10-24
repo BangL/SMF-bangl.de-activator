@@ -2,7 +2,7 @@ name: SMFAccountValidator
 main: de.bangl.smfav.SMFAccountValidatorPlugin
 version: 0.1
 
-authors: [ BangL ]
+authors: [ BangL, mewin ]
 depend: [ CommunityBridge ]
 
 commands:
