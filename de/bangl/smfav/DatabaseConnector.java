@@ -235,7 +235,7 @@ public class DatabaseConnector {
 
     // functional things
 
-    public int getMemberId(final Player player, final Config config) throws Exception
+    public int getMemberId(final Player player, final Config config)
     {
         final ResultSet result = this.executeQuery("SELECT"
                 + " id_member"
@@ -246,18 +246,20 @@ public class DatabaseConnector {
                 , player.getName());
         try
         {
-            result.next();
-            return result.getInt("id_member");
+            while (result.next())
+            {
+                return result.getInt("id_member");
+            }
         }
         catch (SQLException ex)
         {
             plugin.getLogger().log(Level.SEVERE,
                     "Error loading member id of player \"" + player.getName() + "\": ", ex);
         }
-        throw new Exception("This player does not exist.");
+        return -1;
     }
 
-    public boolean isValidated(final Player player, final Config config, final int memberId) throws Exception
+    public boolean isValidated(final Player player, final Config config, final int memberId)
     {
         Boolean valid = false;
         final ResultSet result = this.executeQuery("SELECT"
@@ -281,7 +283,7 @@ public class DatabaseConnector {
         return valid;
     }
 
-    public boolean isValidCode(final Player player, final String code, final Config config, final int memberId) throws Exception
+    public boolean isValidCode(final Player player, final String code, final Config config, final int memberId)
     {
         Boolean valid = false;
         final ResultSet result = this.executeQuery("SELECT"
@@ -305,7 +307,7 @@ public class DatabaseConnector {
         return valid;
     }
 
-    public boolean setValidated(final Player player, final Config config, final int memberId) throws Exception
+    public boolean setValidated(final Player player, final Config config, final int memberId)
     {
         return (// Set validated to true
                 this.execute(

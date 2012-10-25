@@ -48,7 +48,7 @@ public class PlayerListener implements Listener {
             Player player = event.getPlayer();
             if (PermissionsEx.getUser(player).inGroup(this.plugin.getCfg().getString("cb.rank", "Validated")))
             {
-                int memberId = 0;
+                int memberId = -1;
                 try
                 {
                     memberId = this.plugin.getDbc().getMemberId(player, this.plugin.getCfg());
@@ -56,7 +56,7 @@ public class PlayerListener implements Listener {
                 catch (Exception ex)
                 {
                 }
-                if (memberId != 0)
+                if (memberId >= 0)
                 {
                     try
                     {
