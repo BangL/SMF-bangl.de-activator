@@ -257,10 +257,9 @@ public class DatabaseConnector {
         throw new Exception("This player does not exist.");
     }
 
-    public boolean isValidated(final Player player, final Config config) throws Exception
+    public boolean isValidated(final Player player, final Config config, final int memberId) throws Exception
     {
-        Boolean valid = null;
-        final int memberId = this.getMemberId(player, config);
+        Boolean valid = false;
         final ResultSet result = this.executeQuery("SELECT"
                 + " value"
                 + " FROM {PREFIX}themes"
@@ -282,10 +281,9 @@ public class DatabaseConnector {
         return valid;
     }
 
-    public boolean isValidCode(final Player player, final String code, final Config config) throws Exception
+    public boolean isValidCode(final Player player, final String code, final Config config, final int memberId) throws Exception
     {
-        Boolean valid = null;
-        final int memberId = this.getMemberId(player, config);
+        Boolean valid = false;
         final ResultSet result = this.executeQuery("SELECT"
                 + " value"
                 + " FROM {PREFIX}themes"
@@ -307,10 +305,8 @@ public class DatabaseConnector {
         return valid;
     }
 
-    public boolean setValidated(final Player player, final Config config) throws Exception
+    public boolean setValidated(final Player player, final Config config, final int memberId) throws Exception
     {
-        final int memberId = this.getMemberId(player, config);
-        
         return (// Set validated to true
                 this.execute(
                         "UPDATE {PREFIX}themes SET " +

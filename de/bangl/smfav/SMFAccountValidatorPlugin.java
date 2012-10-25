@@ -77,18 +77,19 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 {
                     sender.sendMessage(ChatColor.RED + "Invalid argument count.");
                 }
-                else if (dbc.isValidated(player, config))
+                final int memberId = dbc.getMemberId(player, config);
+                if (dbc.isValidated(player, config, memberId))
                 {
                     sender.sendMessage(ChatColor.RED + "This minecraft name is already validated.");
                 }
                 else if (args[0].trim().isEmpty()
-                        || !dbc.isValidCode(player, args[0].trim(), config))
+                        || !dbc.isValidCode(player, args[0].trim(), config, memberId))
                 {
                     sender.sendMessage(ChatColor.RED + "Invalid code.");
                 }
                 else
                 {
-                    dbc.setValidated(player, config);
+                    dbc.setValidated(player, config, memberId);
 
                     // optional CommunityBridge support
                     if (this.getServer().getPluginManager().getPlugin("CommunityBridge") != null
