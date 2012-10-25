@@ -20,3 +20,4 @@ cb:
   set: true
   # The cb rank to set
   rank: Validated
+  unrank: Forum

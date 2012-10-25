@@ -17,6 +17,7 @@
  */
 package de.bangl.smfav;
 
+import de.bangl.smfav.listener.PlayerListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -35,28 +36,37 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
 {
     private Config config;
     private DatabaseConnector dbc;
+    private PlayerListener listener;
+    private Boolean hasCommunityBridge;
 
     @Override
     public void onEnable()
     {
-        config = new Config(this);
-        dbc = new DatabaseConnector();
-        dbc.init(config.getString("sql.dns", ""),
+        this.hasCommunityBridge = this.getServer().getPluginManager().getPlugin("CommunityBridge") != null;
+        this.config = new Config(this);
+        this.dbc = new DatabaseConnector();
+        this.dbc.init(config.getString("sql.dns", ""),
                 config.getString("sql.username", ""),
                 config.getString("sql.password", ""),
                 config.getString("sql.prefix", ""),
                 this);
-        dbc.connect();
+        this.dbc.connect();
+        if (this.hasCommunityBridge)
+        {
+            this.listener = new PlayerListener(this);
+        }
     }
 
     @Override
     public void onDisable()
     {
+        this.listener = null;
         //dbc.save();
-        dbc.destroy();
-        dbc = null;
+        this.dbc.destroy();
+        this.dbc = null;
         //config.save();
-        config = null;
+        this.config = null;
+        this.hasCommunityBridge = false;
     }
 
     @Override
@@ -77,25 +87,25 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 {
                     sender.sendMessage(ChatColor.RED + "Invalid argument count.");
                 }
-                final int memberId = dbc.getMemberId(player, config);
-                if (dbc.isValidated(player, config, memberId))
+                final int memberId = this.dbc.getMemberId(player, this.config);
+                if (this.dbc.isValidated(player, this.config, memberId))
                 {
                     sender.sendMessage(ChatColor.RED + "This minecraft name is already validated.");
                 }
                 else if (args[0].trim().isEmpty()
-                        || !dbc.isValidCode(player, args[0].trim(), config, memberId))
+                        || !this.dbc.isValidCode(player, args[0].trim(), this.config, memberId))
                 {
                     sender.sendMessage(ChatColor.RED + "Invalid code.");
                 }
                 else
                 {
-                    dbc.setValidated(player, config, memberId);
+                    this.dbc.setValidated(player, config, memberId);
 
                     // optional CommunityBridge support
-                    if (this.getServer().getPluginManager().getPlugin("CommunityBridge") != null
-                            && config.getBoolean("cb.set", true))
+                    if (this.hasCommunityBridge
+                            && this.config.getBoolean("cb.set", true))
                     {
-                        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + config.getString("cb.rank", "Validated"));
+                        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.config.getString("cb.rank", "Validated"));
                     }
                     else
                     {
@@ -110,5 +120,15 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
             }
         }
         return handled;
+    }
+
+    public Config getCfg()
+    {
+        return this.config;
+    }
+
+    public DatabaseConnector getDbc()
+    {
+        return this.dbc;
     }
 }
