@@ -3,7 +3,7 @@ main: de.bangl.smfav.SMFAccountValidatorPlugin
 version: 0.1
 
 authors: [ BangL, mewin ]
-softdepend: [ CommunityBridge ]
+softdepend: [ CommunityBridge, PermissionsEx ]
 
 commands:
   va:

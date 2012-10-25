@@ -38,11 +38,13 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
     private DatabaseConnector dbc;
     private PlayerListener listener;
     private Boolean hasCommunityBridge;
+    private Boolean hasPermissionsEx;
 
     @Override
     public void onEnable()
     {
         this.hasCommunityBridge = this.getServer().getPluginManager().getPlugin("CommunityBridge") != null;
+        this.hasPermissionsEx = this.getServer().getPluginManager().getPlugin("PermissionsEx") != null;
         this.config = new Config(this);
         this.dbc = new DatabaseConnector();
         this.dbc.init(config.getString("sql.dns", ""),
@@ -51,7 +53,8 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 config.getString("sql.prefix", ""),
                 this);
         this.dbc.connect();
-        if (this.hasCommunityBridge)
+        if (this.hasCommunityBridge
+                && this.hasPermissionsEx)
         {
             this.listener = new PlayerListener(this);
         }
@@ -66,6 +69,7 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
         this.dbc = null;
         //config.save();
         this.config = null;
+        this.hasPermissionsEx = false;
         this.hasCommunityBridge = false;
     }
 

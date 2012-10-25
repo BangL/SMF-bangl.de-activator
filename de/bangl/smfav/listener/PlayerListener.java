@@ -20,8 +20,10 @@ import de.bangl.smfav.SMFAccountValidatorPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /**
  *
@@ -29,42 +31,46 @@ import org.bukkit.event.player.PlayerJoinEvent;
  */
 public class PlayerListener implements Listener {
     SMFAccountValidatorPlugin plugin;
+    PermissionsEx pex;
 
     public PlayerListener(SMFAccountValidatorPlugin plugin)
     {
         this.plugin = plugin;
         this.plugin.getServer().getPluginManager().registerEvents(this, this.plugin);
+        this.pex = (PermissionsEx) plugin.getServer().getPluginManager().getPlugin("PermissionsEx");
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerJoin(PlayerJoinEvent event)
     {
         if (this.plugin.getCfg().getBoolean("cb.set", true))
         {
             Player player = event.getPlayer();
-            int memberId = 0;
-            try
+            if (PermissionsEx.getUser(player).inGroup(this.plugin.getCfg().getString("cb.rank", "Validated")))
             {
-                memberId = this.plugin.getDbc().getMemberId(player, this.plugin.getCfg());
-            }
-            catch (Exception ex)
-            {
-            }
-            if (memberId != 0)
-            {
+                int memberId = 0;
                 try
                 {
-                    if (this.plugin.getDbc().isValidated(player, this.plugin.getCfg(), memberId))
-                    {
-                        return;
-                    }
+                    memberId = this.plugin.getDbc().getMemberId(player, this.plugin.getCfg());
                 }
                 catch (Exception ex)
                 {
                 }
+                if (memberId != 0)
+                {
+                    try
+                    {
+                        if (this.plugin.getDbc().isValidated(player, this.plugin.getCfg(), memberId))
+                        {
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.plugin.getCfg().getString("cb.unrank", "Forum"));
             }
-            Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.plugin.getCfg().getString("cb.unrank", "Forum"));
         }
-        
     }
 }
