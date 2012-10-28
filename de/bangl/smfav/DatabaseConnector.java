@@ -271,8 +271,10 @@ public class DatabaseConnector {
                 , memberId);
         try
         {
-            result.next();
-            valid = result.getBoolean("value");
+            while (result.next())
+            {
+                valid = result.getBoolean("value");
+            }
             result.close();
         }
         catch (SQLException ex) 
