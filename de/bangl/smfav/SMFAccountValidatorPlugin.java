@@ -87,7 +87,8 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 {
                     sender.sendMessage(ChatColor.RED + "This command can only be run by a player.");
                 }
-                else if (args.length != 1)
+                else if (args != null
+                        && args.length != 1)
                 {
                     sender.sendMessage(ChatColor.RED + "Invalid argument count.");
                 }
@@ -96,7 +97,8 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 {
                     sender.sendMessage(ChatColor.RED + "This minecraft name is already validated.");
                 }
-                else if (args[0].trim().isEmpty()
+                else if (args == null
+                        || args[0].trim().isEmpty()
                         || !this.dbc.isValidCode(player, args[0].trim(), this.config, memberId))
                 {
                     sender.sendMessage(ChatColor.RED + "Invalid code.");
