@@ -45,8 +45,9 @@ public class Config {
         {
             createDefaultConfig(plugin);
         }
-        try (FileReader reader = new FileReader(configFile)) {
-                values = (Map) yaml.load(reader);
+        try {
+            FileReader reader = new FileReader(configFile);
+            values = (Map) yaml.load(reader);
         } catch (FileNotFoundException ex) {
             plugin.getLogger().log(Level.SEVERE, "Could not load plugin config file: ", ex);
             values = (Map) yaml.load(plugin.getResource("/config.yml"));
@@ -144,15 +145,15 @@ public class Config {
 
     public int getInt(final String name, final int def)
     {
-        return (int) this.getObject(name, (Object) def);
+        return (Integer) this.getObject(name, (Object) def);
     }
 
     public double getDouble(final String name, final double def)
     {
-        return (double) this.getObject(name, (Object) def);
+        return (Double) this.getObject(name, (Object) def);
     }
 
     public boolean getBoolean(final String name, final boolean def) {
-        return (boolean) this.getObject(name, (Object) def);
+        return (Boolean) this.getObject(name, (Object) def);
     }
 }

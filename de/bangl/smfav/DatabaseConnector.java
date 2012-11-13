@@ -203,7 +203,7 @@ public class DatabaseConnector {
 
                 if (params[i] instanceof Boolean)
                 {
-                    replaceString = ((boolean) params[i] ? "1" : "0");
+                    replaceString = ((Boolean) params[i] ? "1" : "0");
                 }
                 else if (params[i] instanceof Date)
                 {
