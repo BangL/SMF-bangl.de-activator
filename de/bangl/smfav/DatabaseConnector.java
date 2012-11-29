@@ -23,7 +23,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -235,8 +237,9 @@ public class DatabaseConnector {
 
     // functional things
 
-    public int getMemberId(final Player player, final Config config)
+    public List<Integer> getMemberIds(final Player player, final Config config)
     {
+        List<Integer> res = new ArrayList<Integer>();
         final ResultSet result = this.executeQuery("SELECT"
                 + " id_member"
                 + " FROM {PREFIX}themes"
@@ -248,7 +251,7 @@ public class DatabaseConnector {
         {
             while (result.next())
             {
-                return result.getInt("id_member");
+                res.add(result.getInt("id_member"));
             }
         }
         catch (SQLException ex)
@@ -256,55 +259,65 @@ public class DatabaseConnector {
             plugin.getLogger().log(Level.SEVERE,
                     "Error loading member id of player \"" + player.getName() + "\": ", ex);
         }
-        return -1;
+        return res;
     }
 
-    public boolean isValidated(final Player player, final Config config, final int memberId)
+    public boolean isValidated(final Player player, final Config config, final List<Integer> memberIds)
     {
         Boolean valid = false;
-        final ResultSet result = this.executeQuery("SELECT"
-                + " value"
-                + " FROM {PREFIX}themes"
-                + " WHERE id_theme = 1"
-                + " AND variable = 'cust_valida'"
-                + " AND id_member = {0}"
-                , memberId);
-        try
-        {
-            while (result.next())
-            {
-                valid = result.getBoolean("value");
+        if (!memberIds.isEmpty()) {
+            String idList = "(";
+            for (Integer memberId : memberIds) {
+                idList = idList + memberId + ",";
             }
-            result.close();
-        }
-        catch (SQLException ex) 
-        {
-            plugin.getLogger().log(Level.SEVERE,
-                    "Error checking validation of player \"" + player.getName() + "\": ", ex);
+            idList = idList.substring(0, idList.length() - 1) + ")";
+            final ResultSet result = this.executeQuery("SELECT"
+                    + " value"
+                    + " FROM {PREFIX}themes"
+                    + " WHERE id_theme = 1"
+                    + " AND variable = 'cust_valida'"
+                    + " AND id_member IN " + idList);
+            try
+            {
+                while (result.next())
+                {
+                    if (result.getBoolean("value")) {
+                        valid = true;
+                    }
+                }
+                result.close();
+            }
+            catch (SQLException ex) 
+            {
+                plugin.getLogger().log(Level.SEVERE,
+                        "Error checking validation of player \"" + player.getName() + "\": ", ex);
+            }
         }
         return valid;
     }
 
-    public boolean isValidCode(final Player player, final String code, final Config config, final int memberId)
+    public Integer isValidCode(final Player player, final String code, final Config config, final List<Integer> memberIds)
     {
-        Boolean valid = false;
-        final ResultSet result = this.executeQuery("SELECT"
-                + " value"
-                + " FROM {PREFIX}themes"
-                + " WHERE id_theme = 1"
-                + " AND variable = 'cust_valida0'"
-                + " AND id_member = {0}"
-                , memberId);
-        try
-        {
-            result.next();
-            valid = result.getString("value").equalsIgnoreCase(code);
-            result.close();
-        }
-        catch (SQLException ex)
-        {
-            plugin.getLogger().log(Level.SEVERE,
-                    "Error checking validate code of player \"" + player.getName() + "\": ", ex);
+        Integer valid = -1;
+        for (Integer memberId : memberIds) {
+            final ResultSet result = this.executeQuery("SELECT"
+                    + " value"
+                    + " FROM {PREFIX}themes"
+                    + " WHERE id_theme = 1"
+                    + " AND variable = 'cust_valida0'"
+                    + " AND id_member = {0}"
+                    , memberId);
+            try
+            {
+                result.next();
+                if (result.getString("value").equalsIgnoreCase(code)) {
+                    valid = memberId;
+                }
+                result.close();
+            }
+            catch (SQLException ex)
+            {
+            }
         }
         return valid;
     }
@@ -313,7 +326,14 @@ public class DatabaseConnector {
     {
         return (// Set validated to true
                 this.execute(
-                        "UPDATE {PREFIX}themes SET " +
+                        "DELETE FROM {PREFIX}themes " +
+                        "WHERE id_theme = 1 " +
+                        "AND id_member = {0} " +
+                        "AND variable = 'cust_valida'",
+                        memberId)
+                &&
+                this.execute(
+                        "INSERT INTO {PREFIX}themes SET " +
                         "value = 1 " +
                         "WHERE id_theme = 1 " +
                         "AND id_member = {0} " +
@@ -327,6 +347,16 @@ public class DatabaseConnector {
                         "AND id_member = {0} " +
                         "AND variable = 'cust_valida0'",
                         memberId)
+                &&
+                // Delete fake accounts
+                this.execute(
+                        "DELETE FROM {PREFIX}themes " +
+                        "WHERE id_theme = 1 " +
+                        "AND id_member <> {0} " +
+                        "AND variable = 'cust_minecr' " +
+                        "AND value = {1}",
+                        memberId,
+                        player.getName())
                 );
     }
 }

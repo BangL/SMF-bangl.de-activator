@@ -17,6 +17,8 @@
 package de.bangl.smfav.listener;
 
 import de.bangl.smfav.SMFAccountValidatorPlugin;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -48,19 +50,19 @@ public class PlayerListener implements Listener {
             Player player = event.getPlayer();
             if (PermissionsEx.getUser(player).inGroup(this.plugin.getCfg().getString("cb.rank", "Validated")))
             {
-                int memberId = -1;
+                List<Integer> memberIds = new ArrayList<Integer>();
                 try
                 {
-                    memberId = this.plugin.getDbc().getMemberId(player, this.plugin.getCfg());
+                    memberIds = this.plugin.getDbc().getMemberIds(player, this.plugin.getCfg());
                 }
                 catch (Exception ex)
                 {
                 }
-                if (memberId >= 0)
+                if (!memberIds.isEmpty())
                 {
                     try
                     {
-                        if (this.plugin.getDbc().isValidated(player, this.plugin.getCfg(), memberId))
+                        if (this.plugin.getDbc().isValidated(player, this.plugin.getCfg(), memberIds))
                         {
                             return;
                         }
@@ -70,6 +72,11 @@ public class PlayerListener implements Listener {
                     }
                 }
                 Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.plugin.getCfg().getString("cb.unrank", "Forum"));
+            } else if (PermissionsEx.getUser(player).inGroup(this.plugin.getCfg().getString("cb.unrank", "Forum"), false)) {
+                final List<Integer> memberIds = this.plugin.dbc.getMemberIds(player, this.plugin.config);
+                if (this.plugin.dbc.isValidated(player, this.plugin.config, memberIds)) {
+                    Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.plugin.getCfg().getString("cb.rank", "Validated"));
+                }
             }
         }
     }

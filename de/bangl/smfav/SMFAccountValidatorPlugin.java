@@ -18,6 +18,7 @@
 package de.bangl.smfav;
 
 import de.bangl.smfav.listener.PlayerListener;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -34,8 +35,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class SMFAccountValidatorPlugin extends JavaPlugin
 {
-    private Config config;
-    private DatabaseConnector dbc;
+    public Config config;
+    public DatabaseConnector dbc;
     private PlayerListener listener;
     private Boolean hasCommunityBridge;
     private Boolean hasPermissionsEx;
@@ -83,40 +84,31 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
         {
             try {
                 final Player player = (Player)sender;
-                if (!(sender instanceof Player))
-                {
-                    sender.sendMessage(ChatColor.RED + "This command can only be run by a player.");
-                }
-                else if (args != null
-                        && args.length != 1)
-                {
-                    sender.sendMessage(ChatColor.RED + "Invalid argument count.");
-                }
-                final int memberId = this.dbc.getMemberId(player, this.config);
-                if (this.dbc.isValidated(player, this.config, memberId))
-                {
-                    sender.sendMessage(ChatColor.RED + "This minecraft name is already validated.");
-                }
-                else if (args == null
-                        || args[0].trim().isEmpty()
-                        || !this.dbc.isValidCode(player, args[0].trim(), this.config, memberId))
-                {
-                    sender.sendMessage(ChatColor.RED + "Invalid code.");
-                }
-                else
-                {
-                    this.dbc.setValidated(player, config, memberId);
+                if (sender instanceof Player) {
+                    final List<Integer> memberIds = this.dbc.getMemberIds(player, this.config);
+                    if (this.dbc.isValidated(player, this.config, memberIds)) {
+                        sender.sendMessage(ChatColor.RED + "This minecraft name is already validated.");
+                    } else if (args == null
+                            || args[0].trim().isEmpty()) {
+                        sender.sendMessage(ChatColor.RED + "Invalid argument count.");
+                    } else {
+                        Integer validMemberId = this.dbc.isValidCode(player, args[0].trim(), this.config, memberIds);
+                        if (validMemberId == -1) {
+                            sender.sendMessage(ChatColor.RED + "Invalid code.");
+                        } else {
+                            this.dbc.setValidated(player, config, validMemberId);
 
-                    // optional CommunityBridge support
-                    if (this.hasCommunityBridge
-                            && this.config.getBoolean("cb.set", true))
-                    {
-                        Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.config.getString("cb.rank", "Validated"));
+                            // optional CommunityBridge support
+                            if (this.hasCommunityBridge
+                                    && this.config.getBoolean("cb.set", true)) {
+                                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.config.getString("cb.rank", "Validated"));
+                            } else {
+                                sender.sendMessage(ChatColor.GREEN + "This minecraft name is now validated!");
+                            }
+                        }
                     }
-                    else
-                    {
-                        sender.sendMessage(ChatColor.GREEN + "This minecraft name is now validated!");
-                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "This command can only be run by a player.");
                 }
                 handled = true;
             } catch (Exception ex) {
