@@ -335,9 +335,9 @@ public class DatabaseConnector {
                 this.execute(
                         "INSERT INTO {PREFIX}themes SET " +
                         "value = 1 " +
-                        "WHERE id_theme = 1 " +
-                        "AND id_member = {0} " +
-                        "AND variable = 'cust_valida'",
+                        ", id_theme = 1 " +
+                        ", id_member = {0} " +
+                        ", variable = 'cust_valida'",
                         memberId)
                 &&
                 // Delete validation code
