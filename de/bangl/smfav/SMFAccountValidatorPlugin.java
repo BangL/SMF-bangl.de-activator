@@ -38,13 +38,11 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
     public Config config;
     public DatabaseConnector dbc;
     private PlayerListener listener;
-    private Boolean hasCommunityBridge;
     private Boolean hasPermissionsEx;
 
     @Override
     public void onEnable()
     {
-        this.hasCommunityBridge = this.getServer().getPluginManager().getPlugin("CommunityBridge") != null;
         this.hasPermissionsEx = this.getServer().getPluginManager().getPlugin("PermissionsEx") != null;
         this.config = new Config(this);
         this.dbc = new DatabaseConnector();
@@ -54,8 +52,7 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 config.getString("sql.prefix", ""),
                 this);
         this.dbc.connect();
-        if (this.hasCommunityBridge
-                && this.hasPermissionsEx)
+        if (this.hasPermissionsEx)
         {
             this.listener = new PlayerListener(this);
         }
@@ -71,7 +68,6 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
         //config.save();
         this.config = null;
         this.hasPermissionsEx = false;
-        this.hasCommunityBridge = false;
     }
 
     @Override
@@ -99,10 +95,8 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                             this.dbc.setValidated(player, config, validMemberId);
 
                             // optional CommunityBridge support
-                            if (this.hasCommunityBridge
-                                    && this.config.getBoolean("cb.set", true)) {
-                                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.config.getString("cb.rank", "Validated"));
-                            } else {
+                            if (this.config.getBoolean("cb.set", true)) {
+                                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex user " + player.getName() + " group set " + this.config.getString("cb.rank", "Mitglied"));
                                 sender.sendMessage(ChatColor.GREEN + "This minecraft name is now validated!");
                             }
                         }

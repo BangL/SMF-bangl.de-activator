@@ -19,5 +19,5 @@ cb:
   # Set a new rank for validated members?
   set: true
   # The cb rank to set
-  rank: Validated
+  rank: Mitglied
   unrank: Forum

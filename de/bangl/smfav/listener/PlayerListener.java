@@ -19,6 +19,7 @@ package de.bangl.smfav.listener;
 import de.bangl.smfav.SMFAccountValidatorPlugin;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -34,7 +35,7 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
 public class PlayerListener implements Listener {
     SMFAccountValidatorPlugin plugin;
     PermissionsEx pex;
-
+  
     public PlayerListener(SMFAccountValidatorPlugin plugin)
     {
         this.plugin = plugin;
@@ -71,11 +72,13 @@ public class PlayerListener implements Listener {
                     {
                     }
                 }
-                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.plugin.getCfg().getString("cb.unrank", "Forum"));
+                plugin.getLogger().log(Level.FINE, "Unrank: Set " + player.getName() + " to group " + this.plugin.getCfg().getString("cb.unrank", "Forum") + "...");
+                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex user " + player.getName() + " group set " + this.plugin.getCfg().getString("cb.unrank", "Forum"));
             } else if (PermissionsEx.getUser(player).inGroup(this.plugin.getCfg().getString("cb.unrank", "Forum"), false)) {
                 final List<Integer> memberIds = this.plugin.dbc.getMemberIds(player, this.plugin.config);
                 if (this.plugin.dbc.isValidated(player, this.plugin.config, memberIds)) {
-                    Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "cbrank " + player.getName() + " " + this.plugin.getCfg().getString("cb.rank", "Validated"));
+                    plugin.getLogger().log(Level.FINE, "Rank: Set " + player.getName() + " to group " + this.plugin.getCfg().getString("cb.rank", "Validated") + "...");
+                    Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex user " + player.getName() + " group set " + this.plugin.getCfg().getString("cb.rank", "Validated"));
                 }
             }
         }

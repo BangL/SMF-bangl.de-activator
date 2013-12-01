@@ -1,9 +1,9 @@
 name: SMFAccountValidator
 main: de.bangl.smfav.SMFAccountValidatorPlugin
-version: 0.1
+version: 0.2
 
 authors: [ BangL, mewin ]
-depend: [ CommunityBridge, PermissionsEx ]
+depend: [ PermissionsEx ]
 
 commands:
   va:
