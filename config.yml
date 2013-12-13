@@ -6,18 +6,24 @@
 # database login data
 sql:
   # database to connect to
-  dns: jdbc:mysql://localhost/smf
+  dns: 'jdbc:mysql://localhost/smf'
   # username to login on database
-  username: smf
+  username: 'smf'
   # password to login
-  password: password
+  password: 'password'
   # prefix for smf tables
-  prefix: smf_
-  
-# Optinal Values, only used when "CommunityBridge" is installed
-cb:
-  # Set a new rank for validated members?
-  set: true
-  # The cb rank to set
-  rank: Mitglied
-  unrank: Forum
+  prefix: 'smf_'
+
+# Set a new group/rank for validated members? 
+setgroup:
+  # The group/rank to set
+  from: 'Gast'
+  to: 'Mitglied'
+
+messages:
+  alreadyvalid: "Dein Minecraft Account ist bereits validiert."
+  invalidcount: "Ungueltige Argumentanzahl."
+  invalidcode: "Ungueltiger Validierungs-Code."
+  validated: "Dein Minecraft Account ist nun validiert. :)"
+  playeronly: "Nur Online-Spieler, nix Konsole und so."
+  errorvalidate: "Unbekannter Fehler beim aktivieren des Minecraft Accounts. Bitte einen Admin kontaktieren."

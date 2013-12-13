@@ -1,6 +1,6 @@
 name: SMFAccountValidator
 main: de.bangl.smfav.SMFAccountValidatorPlugin
-version: 0.2
+version: 0.3
 
 authors: [ BangL, mewin ]
 depend: [ PermissionsEx ]
@@ -8,6 +8,7 @@ depend: [ PermissionsEx ]
 commands:
   va:
     permission: account.validate
+    description: Validiere deinen Minecraft Account fuers Forum.
     usage: /va [code]
     aliases: [ av, validate ]
 

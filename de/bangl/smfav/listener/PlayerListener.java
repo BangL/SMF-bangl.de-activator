@@ -20,13 +20,11 @@ import de.bangl.smfav.SMFAccountValidatorPlugin;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /**
  *
@@ -34,53 +32,44 @@ import ru.tehkode.permissions.bukkit.PermissionsEx;
  */
 public class PlayerListener implements Listener {
     SMFAccountValidatorPlugin plugin;
-    PermissionsEx pex;
   
-    public PlayerListener(SMFAccountValidatorPlugin plugin)
-    {
+    public PlayerListener(SMFAccountValidatorPlugin plugin) {
         this.plugin = plugin;
         this.plugin.getServer().getPluginManager().registerEvents(this, this.plugin);
-        this.pex = (PermissionsEx) plugin.getServer().getPluginManager().getPlugin("PermissionsEx");
     }
 
     @EventHandler(priority = EventPriority.LOW)
-    public void onPlayerJoin(PlayerJoinEvent event)
-    {
-        if (this.plugin.getCfg().getBoolean("cb.set", true))
-        {
-            Player player = event.getPlayer();
-            if (PermissionsEx.getUser(player).inGroup(this.plugin.getCfg().getString("cb.rank", "Validated")))
-            {
-                List<Integer> memberIds = new ArrayList<Integer>();
-                try
-                {
-                    memberIds = this.plugin.getDbc().getMemberIds(player, this.plugin.getCfg());
-                }
-                catch (Exception ex)
-                {
-                }
-                if (!memberIds.isEmpty())
-                {
-                    try
-                    {
-                        if (this.plugin.getDbc().isValidated(player, this.plugin.getCfg(), memberIds))
-                        {
-                            return;
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        final Player player = event.getPlayer();
+        this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, new Runnable() {
+            public void run() {
+                String from = plugin.getCfg().getString("setgroup.from", "Forum");
+                String to = plugin.getCfg().getString("setgroup.to", "Mitglied");
+                if (plugin.isUserInGroup(player, from)) {
+                    final List<Integer> memberIds = plugin.getDbc().getMemberIds(player, plugin.getCfg());
+                    if (plugin.getDbc().isValidated(player, plugin.getCfg(), memberIds)) {
+                        plugin.setUserGroup(player, to);
+                        plugin.getLogger().log(Level.INFO, player.getName() + " is validated. Set to group " + to);
+                    }
+                } else {
+                    List<Integer> memberIds = new ArrayList<Integer>();
+                    try {
+                        memberIds = plugin.getDbc().getMemberIds(player, plugin.getCfg());
+                    } catch (Exception ex) {
+                    }
+                    if (!memberIds.isEmpty()) {
+                        try {
+                            if (plugin.getDbc().isValidated(player, plugin.getCfg(), memberIds)) {
+                                plugin.getLogger().log(Level.INFO, player.getName() + " is validated.");
+                                return;
+                            }
+                        } catch (Exception ex) {
                         }
                     }
-                    catch (Exception ex)
-                    {
-                    }
-                }
-                plugin.getLogger().log(Level.FINE, "Unrank: Set " + player.getName() + " to group " + this.plugin.getCfg().getString("cb.unrank", "Forum") + "...");
-                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex user " + player.getName() + " group set " + this.plugin.getCfg().getString("cb.unrank", "Forum"));
-            } else if (PermissionsEx.getUser(player).inGroup(this.plugin.getCfg().getString("cb.unrank", "Forum"), false)) {
-                final List<Integer> memberIds = this.plugin.dbc.getMemberIds(player, this.plugin.config);
-                if (this.plugin.dbc.isValidated(player, this.plugin.config, memberIds)) {
-                    plugin.getLogger().log(Level.FINE, "Rank: Set " + player.getName() + " to group " + this.plugin.getCfg().getString("cb.rank", "Validated") + "...");
-                    Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex user " + player.getName() + " group set " + this.plugin.getCfg().getString("cb.rank", "Validated"));
+                    plugin.setUserGroup(player, from);
+                    plugin.getLogger().log(Level.INFO, player.getName() + " is not validated. Set to group " + from);
                 }
             }
-        }
+        });
     }
 }

@@ -44,14 +44,12 @@ public class DatabaseConnector {
     private boolean initialized;
     private SimpleDateFormat sdf;
 
-    public DatabaseConnector()
-    {
+    public DatabaseConnector() {
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
     // technical things
-    public void init(String dns, String username, String password, String prefix, Plugin plugin)
-    {
+    public void init(String dns, String username, String password, String prefix, Plugin plugin) {
         this.dns = dns;
         this.username = username;
         this.password = password;
@@ -63,24 +61,19 @@ public class DatabaseConnector {
         initialized = true;
     }
 
-    public void destroy()
-    {
-        if (this.connected())
-        {
+    public void destroy() {
+        if (this.connected()) {
             this.disconnect();
         }
         instance = null;
     }
 
-    public void connect()
-    {
-        if (!initialized)
-        {
+    public void connect() {
+        if (!initialized) {
             plugin.getLogger().log(Level.WARNING, "Trying to connect to database while not initialized.");
             return;
         }
-        if (connection != null)
-        {
+        if (connection != null) {
             plugin.getLogger().log(Level.WARNING, "Trying to connect to database while already connected.");
             return;
         }
@@ -94,10 +87,8 @@ public class DatabaseConnector {
         plugin.getLogger().log(Level.FINE, "Successfully connected.");
     }
 
-    public void disconnect()
-    {
-        if (connection == null)
-        {
+    public void disconnect() {
+        if (connection == null) {
             plugin.getLogger().log(Level.WARNING, "Trying to disconnect while not connected.");
             return;
         }
@@ -109,33 +100,22 @@ public class DatabaseConnector {
         connection = null;
     }
 
-    public boolean connected()
-    {
-        if (connection == null)
-        {
+    public boolean connected() {
+        if (connection == null) {
             return false;
-        }
-        else
-        {
+        } else {
             try {
-                if (connection.isClosed())
-                {
+                if (connection.isClosed()) {
                     return false;
-                }
-                else
-                {
+                } else {
                     Statement st = connection.createStatement();
                     boolean result;
 
-                    try
-                    {
+                    try {
                         result = st.execute("SELECT 1");
-                    }
-                    catch(Exception ex)
-                    {
+                    } catch(Exception ex) {
                         return false;
                     }
-
                     return result;
                 }
             } catch (SQLException ex) {
@@ -145,10 +125,8 @@ public class DatabaseConnector {
         }
     }
 
-    public boolean execute(String sql, Object ... params)
-    {
-        if (!this.connected())
-        {
+    public boolean execute(String sql, Object ... params) {
+        if (!this.connected()) {
             this.connect();
         }
 
@@ -159,8 +137,7 @@ public class DatabaseConnector {
             plugin.getLogger().log(Level.SEVERE, "Could not create SQL statement: ", ex);
             return false;
         }
-        try
-        {
+        try {
             statement.executeUpdate(replaceParams(sql, params));
         } catch(SQLException ex) {
             plugin.getLogger().log(Level.SEVERE, "Could not execute SQL statement: " + sql + " :", ex);
@@ -169,10 +146,9 @@ public class DatabaseConnector {
         return true;
     }
 
-    public ResultSet executeQuery(String sql, Object ... params)
-    {
-        if (!this.connected())
-        {
+    public ResultSet executeQuery(String sql, Object ... params) {
+        if (!this.connected()) {
+            this.disconnect();
             this.connect();
         }
         Statement statement;
@@ -182,8 +158,7 @@ public class DatabaseConnector {
             plugin.getLogger().log(Level.SEVERE, "Could not create SQL statement: ", ex);
             return null;
         }
-        try
-        {
+        try {
             return statement.executeQuery(replaceParams(sql, params));
         } catch(SQLException ex) {
             plugin.getLogger().log(Level.SEVERE, "Could not execute SQL statement: " + sql + " :", ex);
@@ -191,43 +166,34 @@ public class DatabaseConnector {
         }
     }
 
-    private String replaceParams(String sql, Object[] params)
-    {
+    private String replaceParams(String sql, Object[] params) {
         String returnString = sql;
 
         returnString = returnString.replace("{PREFIX}", prefix);
 
-        for(int i = 0; i < params.length; i++)
-        {
-            if (params[i] != null)
-            {
+        for(int i = 0; i < params.length; i++) {
+            if (params[i] != null) {
                 String replaceString = params[i].toString();
 
-                if (params[i] instanceof Boolean)
-                {
+                if (params[i] instanceof Boolean) {
                     replaceString = ((Boolean) params[i] ? "1" : "0");
-                }
-                else if (params[i] instanceof Date)
-                {
+                } else if (params[i] instanceof Date) {
                     replaceString = sdf.format((Date) params[i]);
                 }
 
                 replaceString = replaceString.replace("'", "\\'");
 
-                if (!(params[i] instanceof Integer ||
-                    params[i] instanceof Double ||
-                    params[i] instanceof Short ||
-                    params[i] instanceof Byte ||
-                    params[i] instanceof Long ||
-                    params[i] instanceof Boolean))
-                {
+                if (!(params[i] instanceof Integer
+                        || params[i] instanceof Double
+                        || params[i] instanceof Short
+                        || params[i] instanceof Byte
+                        || params[i] instanceof Long
+                        || params[i] instanceof Boolean)) {
                     replaceString = "'" + replaceString + "'";
                 }
 
                 returnString = returnString.replace("{" + i + "}", replaceString);
-            }
-            else
-            {
+            } else {
                 returnString = returnString.replace("{" + i + "}", "NULL");
             }
         }
@@ -237,8 +203,7 @@ public class DatabaseConnector {
 
     // functional things
 
-    public List<Integer> getMemberIds(final Player player, final Config config)
-    {
+    public List<Integer> getMemberIds(final Player player, final Config config) {
         List<Integer> res = new ArrayList<Integer>();
         final ResultSet result = this.executeQuery("SELECT"
                 + " id_member"
@@ -247,23 +212,18 @@ public class DatabaseConnector {
                 + " AND variable = 'cust_minecr'"
                 + " AND value = {0}"
                 , player.getName());
-        try
-        {
-            while (result.next())
-            {
+        try {
+            while (result.next()) {
                 res.add(result.getInt("id_member"));
             }
-        }
-        catch (SQLException ex)
-        {
+        } catch (SQLException ex) {
             plugin.getLogger().log(Level.SEVERE,
                     "Error loading member id of player \"" + player.getName() + "\": ", ex);
         }
         return res;
     }
 
-    public boolean isValidated(final Player player, final Config config, final List<Integer> memberIds)
-    {
+    public boolean isValidated(final Player player, final Config config, final List<Integer> memberIds) {
         Boolean valid = false;
         if (!memberIds.isEmpty()) {
             String idList = "(";
@@ -277,18 +237,14 @@ public class DatabaseConnector {
                     + " WHERE id_theme = 1"
                     + " AND variable = 'cust_valida'"
                     + " AND id_member IN " + idList);
-            try
-            {
-                while (result.next())
-                {
+            try {
+                while (result.next()) {
                     if (result.getBoolean("value")) {
                         valid = true;
                     }
                 }
                 result.close();
-            }
-            catch (SQLException ex) 
-            {
+            } catch (SQLException ex) {
                 plugin.getLogger().log(Level.SEVERE,
                         "Error checking validation of player \"" + player.getName() + "\": ", ex);
             }
@@ -296,8 +252,7 @@ public class DatabaseConnector {
         return valid;
     }
 
-    public Integer isValidCode(final Player player, final String code, final Config config, final List<Integer> memberIds)
-    {
+    public Integer isValidCode(final Player player, final String code, final Config config, final List<Integer> memberIds) {
         Integer valid = -1;
         for (Integer memberId : memberIds) {
             final ResultSet result = this.executeQuery("SELECT"
@@ -307,23 +262,19 @@ public class DatabaseConnector {
                     + " AND variable = 'cust_valida0'"
                     + " AND id_member = {0}"
                     , memberId);
-            try
-            {
+            try {
                 result.next();
                 if (result.getString("value").equalsIgnoreCase(code)) {
                     valid = memberId;
                 }
                 result.close();
-            }
-            catch (SQLException ex)
-            {
+            } catch (SQLException ex) {
             }
         }
         return valid;
     }
 
-    public boolean setValidated(final Player player, final Config config, final int memberId)
-    {
+    public boolean setValidated(final Player player, final Config config, final int memberId) {
         return (// Set validated to true
                 this.execute(
                         "DELETE FROM {PREFIX}themes " +

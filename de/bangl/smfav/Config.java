@@ -36,13 +36,11 @@ import org.yaml.snakeyaml.Yaml;
 public class Config {
     private Map<String, Object> values;
 
-    public Config(final Plugin plugin) 
-    {
+    public Config(final Plugin plugin) {
         final Yaml yaml = new Yaml();
         final File configFile = new File(plugin.getDataFolder(), "config.yml");
 
-        if (!configFile.exists())
-        {
+        if (!configFile.exists()) {
             createDefaultConfig(plugin);
         }
         try {
@@ -57,99 +55,73 @@ public class Config {
         }
     }
 
-    private static void createDefaultConfig(Plugin plugin)
-    {
+    private static void createDefaultConfig(Plugin plugin) {
         FileOutputStream out = null;
         InputStream input = null;
         final File configFile = new File(plugin.getDataFolder(), "/config.yml");
 
         if (plugin.getDataFolder().exists()
-                || plugin.getDataFolder().mkdirs())
-        {
-            try
-            {
+                || plugin.getDataFolder().mkdirs()) {
+            try {
                 if (configFile.exists()
-                        || configFile.createNewFile())
-                {
+                        || configFile.createNewFile()) {
                     out = new FileOutputStream(configFile);
                     input = plugin.getResource("config.yml");
 
                     int next;
-                    while((next = input.read()) >= 0)
-                    {
+                    while((next = input.read()) >= 0) {
                         out.write(next);
                     }
-                }
-                else
-                {
+                } else {
                     plugin.getLogger().log(Level.SEVERE, "Could not create default configuration file.");
                 }
-            }
-            catch (IOException ex)
-            {
+            } catch (IOException ex) {
                 plugin.getLogger().log(Level.SEVERE, "Could not create default configuration file: ", ex);
-            }
-            finally
-            {
-                try
-                {
-                    if (input != null)
-                    {
+            } finally {
+                try {
+                    if (input != null) {
                         input.close();
                     }
 
-                    if (out != null)
-                    {
+                    if (out != null) {
                         out.close();
                     }
+                } catch (IOException ex) {
                 }
-                catch (IOException ex)
-                {}
             }
-        }
-        else
-        {
+        } else {
             plugin.getLogger().log(Level.SEVERE, "Could not create config folder.");
         }
     }
 
-    private Object getValue(final String name, final Object def, final Map<String, Object> map)
-    {
+    private Object getValue(final String name, final Object def, final Map<String, Object> map) {
         final int dot = name.indexOf(".");
 
-        if (dot > 0)
-        {
+        if (dot > 0) {
             final Map subMap = (Map) map.get(name.substring(0, dot));
             
             return this.getValue(name.substring(dot + 1), def, subMap);
         }
-        if (!map.containsKey(name))
-        {
+        if (!map.containsKey(name)) {
             return def;
-        }
-        else
-        {
+        } else {
             return map.get(name);
         }
     }
 
-    public Object getObject(final String name, final Object def)
-    {
+    public Object getObject(final String name, final Object def) {
         return this.getValue(name, def, values);
     }
 
-    public String getString(final String name, final String def)
-    {
+    public String getString(final String name, final String def) {
         return (String) this.getObject(name, (Object) def);
     }
 
-    public int getInt(final String name, final int def)
-    {
+    public int getInt(final String name, final int def) {
         return (Integer) this.getObject(name, (Object) def);
     }
 
-    public double getDouble(final String name, final double def)
-    {
+    public double getDouble(final String name, final double def) {
         return (Double) this.getObject(name, (Object) def);
     }
 

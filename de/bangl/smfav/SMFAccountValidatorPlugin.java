@@ -21,29 +21,27 @@ import de.bangl.smfav.listener.PlayerListener;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  *
  * @author BangL <henno.rickowski@googlemail.com>
- * @author mewin<mewin001@hotmail.de>
+ * @author mewin <mewin001@hotmail.de>
  */
 public class SMFAccountValidatorPlugin extends JavaPlugin
 {
-    public Config config;
-    public DatabaseConnector dbc;
+    private Config config;
+    private DatabaseConnector dbc;
     private PlayerListener listener;
-    private Boolean hasPermissionsEx;
+    private ru.tehkode.permissions.bukkit.PermissionsEx Pex;
 
     @Override
-    public void onEnable()
-    {
-        this.hasPermissionsEx = this.getServer().getPluginManager().getPlugin("PermissionsEx") != null;
+    public void onEnable() {
         this.config = new Config(this);
         this.dbc = new DatabaseConnector();
         this.dbc.init(config.getString("sql.dns", ""),
@@ -52,75 +50,76 @@ public class SMFAccountValidatorPlugin extends JavaPlugin
                 config.getString("sql.prefix", ""),
                 this);
         this.dbc.connect();
-        if (this.hasPermissionsEx)
-        {
-            this.listener = new PlayerListener(this);
-        }
+
+        PluginManager pm = this.getServer().getPluginManager();
+        this.Pex = (ru.tehkode.permissions.bukkit.PermissionsEx) pm.getPlugin("PermissionsEx");
+        this.listener = new PlayerListener(this);
     }
 
     @Override
-    public void onDisable()
-    {
+    public void onDisable() {
         this.listener = null;
-        //dbc.save();
         this.dbc.destroy();
         this.dbc = null;
-        //config.save();
         this.config = null;
-        this.hasPermissionsEx = false;
     }
 
+    public Boolean isUserInGroup(Player player, String group) {
+        return this.Pex.getUser(player).inGroup(group, false);
+    }
+    
+    public void setUserGroup(Player player, String group) {
+        String[] groups = new String[1];
+        groups[0] = group;
+        this.Pex.getUser(player).setGroups(groups);
+    }
+    
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
-    {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         Boolean handled = false;
         if (cmd.getName().equalsIgnoreCase("va")
                 || cmd.getName().equalsIgnoreCase("av")
-                || cmd.getName().equalsIgnoreCase("validate"))
-        {
+                || cmd.getName().equalsIgnoreCase("validate")) {
             try {
                 final Player player = (Player)sender;
                 if (sender instanceof Player) {
                     final List<Integer> memberIds = this.dbc.getMemberIds(player, this.config);
                     if (this.dbc.isValidated(player, this.config, memberIds)) {
-                        sender.sendMessage(ChatColor.RED + "This minecraft name is already validated.");
+                        sender.sendMessage(ChatColor.RED + config.getString("messages.alreadyvalid", "This minecraft name is already validated."));
                     } else if (args == null
                             || args[0].trim().isEmpty()) {
-                        sender.sendMessage(ChatColor.RED + "Invalid argument count.");
+                        sender.sendMessage(ChatColor.RED + config.getString("messages.invalidcount", "Invalid argument count."));
+                        return false;
                     } else {
                         Integer validMemberId = this.dbc.isValidCode(player, args[0].trim(), this.config, memberIds);
                         if (validMemberId == -1) {
-                            sender.sendMessage(ChatColor.RED + "Invalid code.");
+                            sender.sendMessage(ChatColor.RED + config.getString("messages.invalidcode", "Invalid code."));
                         } else {
                             this.dbc.setValidated(player, config, validMemberId);
-
-                            // optional CommunityBridge support
-                            if (this.config.getBoolean("cb.set", true)) {
-                                Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), "pex user " + player.getName() + " group set " + this.config.getString("cb.rank", "Mitglied"));
-                                sender.sendMessage(ChatColor.GREEN + "This minecraft name is now validated!");
-                            }
+                            String group = this.config.getString("setgroup.to", "Mitglied");
+                            setUserGroup(player, group);
+                            getLogger().log(Level.INFO, player.getName() + " typed in a valid code and is now validated. Set to group " + group);
+                            sender.sendMessage(ChatColor.GREEN + config.getString("messages.validated", "This minecraft name is now validated!"));
                         }
                     }
                 } else {
-                    sender.sendMessage(ChatColor.RED + "This command can only be run by a player.");
+                    sender.sendMessage(ChatColor.RED + config.getString("messages.playeronly", "This command can only be run by a player."));
                 }
                 handled = true;
             } catch (Exception ex) {
                 sender.sendMessage(ChatColor.RED
-                        + "There was an error while validating your minecraft name. Please contact one of our admins.");
+                        + config.getString("messages.errorvalidate", "There was an error while validating your minecraft name. Please contact one of our admins."));
                 Logger.getLogger(SMFAccountValidatorPlugin.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return handled;
     }
 
-    public Config getCfg()
-    {
+    public Config getCfg() {
         return this.config;
     }
 
-    public DatabaseConnector getDbc()
-    {
+    public DatabaseConnector getDbc() {
         return this.dbc;
     }
 }
